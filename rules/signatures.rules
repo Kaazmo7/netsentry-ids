@@ -1,0 +1,19 @@
+# NetSentry-IDS example signature set.
+# Format documented in netsentry/rules.py. One rule per line.
+
+# --- Command & control / malware infrastructure ---
+alert tcp any any -> any 4444 (msg:"Possible reverse shell / Metasploit default handler port"; flags:S; sid:1001; mitre:T1571; severity:high;)
+alert tcp any any -> any 1337 (msg:"Traffic to commonly-used backdoor port 1337"; flags:S; sid:1002; mitre:T1571; severity:medium;)
+alert tcp any any -> any 6666:6669 (msg:"Legacy IRC port -- historically used for botnet C2"; flags:S; sid:1003; mitre:T1071.001; severity:low;)
+
+# --- Plaintext credential exposure ---
+alert tcp any any -> any 23 (msg:"Telnet traffic detected -- plaintext credentials in transit"; flags:S; sid:1010; mitre:T1040; severity:medium;)
+alert tcp any any -> any 21 (msg:"FTP control channel -- plaintext credentials in transit"; flags:S; sid:1011; mitre:T1040; severity:low;)
+
+# --- Suspicious payload content ---
+alert tcp any any -> any 80 (msg:"HTTP request containing /etc/passwd -- possible path traversal / LFI attempt"; content:"/etc/passwd"; sid:1020; mitre:T1083; severity:critical;)
+alert tcp any any -> any any (msg:"Payload contains a Windows cmd.exe invocation -- possible command injection"; content:"cmd.exe"; nocase; dsize:>0; sid:1021; mitre:T1059.003; severity:high;)
+alert udp any any -> any 69 (msg:"TFTP traffic -- often used to stage payloads post-exploitation"; sid:1022; mitre:T1105; severity:low;)
+
+# --- Recon / oversized ICMP (covert channel or ping-of-death family) ---
+alert icmp any any -> any any (msg:"Oversized ICMP payload -- possible covert channel or DoS probe"; dsize:>1000; sid:1030; mitre:T1095; severity:medium;)
